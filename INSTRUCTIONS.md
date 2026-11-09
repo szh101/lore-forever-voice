@@ -15,20 +15,24 @@ Lore Forever 1.3.0 是 WoW: Forever 的剧情插件（CurseForge 项目 1715510�
 
 ## 2. 输入材料
 
-**参考包**（游戏电脑上生成的，约 40 MB）：用户的 OneDrive 里
-`OneDrive\LoreForever-zhCN\LoreForever-reference-kit.zip`。里面有：
+**从 CurseForge 获取**：在这台电脑上用 CurseForge 安装 **Lore Forever 1.3.0**（项目 1715510），以及它的这些可选下载：
 
-| 路径 | 内容 |
+- 女声：`LoreForever_Voice_Female`、`_Alliance`、`_Horde`、`_MoreItems`、`_MorePeople`、`_MorePlaces`、`_Quests`、`_Quests2`、`_Quests3`、`_MoreQuests1`、`_MoreQuests2`、`_MoreQuests3`
+- 法语参考：`LoreForever_Lang_frFR`、`LoreForever_Voice_Female_MorePeople_frFR`
+
+不需要装 WoW 本体，只要这些插件文件夹（CurseForge 装好后找到它们的文件夹，复制到工作目录 `addons/` 下）。其中：
+
+| 文件夹 | 用途 |
 |---|---|
-| `addons/LoreForever/` | 插件核心，完整（代码 + `Data/` 英文剧情数据） |
-| `addons/LoreForever_Lang_frFR/` | 法语语言包，完整，**中文语言包的模板** |
-| `addons/LoreForever_Voice_*/` | 每个语音包的 `.toc`、`Clips.lua`、`Transport.lua`、`Transport.json`、`CREDITS.txt`（**不含音频**） |
-| `samples/` | 几段英文、法语 MP3 原样样本，用来对齐音频格式 |
-| `inventory.json` | 每个语音包的片段数、MP3 数和 toc 元数据 |
+| `LoreForever/` | 插件核心：代码 + `Data/` 英文剧情数据 |
+| `LoreForever_Lang_frFR/` | 法语语言包，**中文语言包的模板** |
+| `LoreForever_Voice_Female*/` | 每个包的 `.toc`、`Clips.lua`、`Transport.lua`/`.json`：片段 ID、英文文字、分段方式；`Audio/` 里的 MP3 用来对齐音频格式 |
+| `LoreForever_Voice_Female_MorePeople_frFR/` | 非英语女声包的现成例子 |
 
-拿不到 OneDrive 的话：在 CurseForge 装 Lore Forever 1.3.0 和下面列的女声语音包，效果一样。
+先核对版本：`LoreForever/LoreForever.toc` 的 `## Version` 必须是 `1.3.0`。用户那边的片段数是（`Clips.lua` 里 `c["..."]` 的行数）：
+Female 198、Alliance 385、Horde 296、MoreItems 2435、MorePeople 2500、MorePlaces 2392、Quests 4104、Quests2 3535、Quests3 4709、MoreQuests1 3688、MoreQuests2 5261、MoreQuests3 1953，合计 35,456。对不上就是版本不同，先告诉用户。
 
-**这些参考材料是插件作者的作品，不要提交到本仓库**（本仓库是公开的）。
+**这些材料是插件作者的作品，不要提交到本仓库**（本仓库是公开的）。
 
 ## 3. 先读懂插件的格式（必须）
 
@@ -62,7 +66,7 @@ Lore Forever 1.3.0 是 WoW: Forever 的剧情插件（CurseForge 项目 1715510�
    | `..._Quests` / `_Quests2` / `_Quests3` | 各自加 `_zhCN` |
    | `..._MoreQuests1` / `2` / `3` | 各自加 `_zhCN` |
 
-   合计约 35,000 个片段（`inventory.json` 的 `clipIds`，女声 12 个包相加）。`LoreForever_Voice_Default*`（男声）的片段 ID 和女声相同，**不用做**。
+   合计 35,456 个片段（第 2 节的数字）。`LoreForever_Voice_Default*`（男声）的片段 ID 和女声相同，**不用做**。
    每个包：toc（`Pack: voice`、`Locale: zhCN`、`Gender: female`、该有的 `Extends`，照 frFR 包）、`Clips.lua`（`c[id] = hash`、`P.len[id]`）、需要分段的长篇写 `Transport.lua`（结构照英文包：`hash`、`fullHash`、各段 `file`/`duration`/`start`/`head`）、`Audio/`、`CREDITS.txt`。
    任务对话包：客户端是英文，中文录音要走"在英文任务页上播放中文录音 + 中文字幕"那条路（`P.questVoice`、`P.questText`、`P.questTitle`），按 `Voice.lua` 的规则写。
 
@@ -75,7 +79,7 @@ Lore Forever 1.3.0 是 WoW: Forever 的剧情插件（CurseForge 项目 1715510�
 
 ## 6. 录音要求
 
-- 用用户的 AI 女声。用 `samples/` 量出英文包的 MP3 参数（采样率、声道、码率），中文包用同样的。
+- 用用户的 AI 女声。用英文女声包 `Audio/` 里的 MP3 量出参数（采样率、声道、码率），中文包用同样的。
 - 统一响度（和英文样本听感一致，例如都归一到约 -16 LUFS），去掉首尾多余静音。
 - 长篇按英文 Transport 的方式分段，`duration`/`start` 用实际音频时长。
 - 每个片段写 `P.len`（十分之一秒，取实际时长）。

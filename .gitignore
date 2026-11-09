@@ -1,4 +1,4 @@
-# Reference kit and build outputs never go into git (packs ship as Release assets).
+# Lore Forever files from CurseForge and build outputs never go into git (packs ship as Release assets).
 addons/
 samples/
 kit/
