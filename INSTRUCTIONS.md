@@ -66,7 +66,7 @@ Female 198、Alliance 385、Horde 296、MoreItems 2435、MorePeople 2500、MoreP
    | `..._Quests` / `_Quests2` / `_Quests3` | 各自加 `_zhCN` |
    | `..._MoreQuests1` / `2` / `3` | 各自加 `_zhCN` |
 
-   合计 35,456 个片段（第 2 节的数字）。`LoreForever_Voice_Default*`（男声）的片段 ID 和女声相同，**不用做**。
+   合计 31,456 个片段（第 2 节的数字）。`LoreForever_Voice_Default*`（男声）的片段 ID 和女声相同，**不用做**。
    每个包：toc（`Pack: voice`、`Locale: zhCN`、`Gender: female`、该有的 `Extends`，照 frFR 包）、`Clips.lua`（`c[id] = hash`、`P.len[id]`）、需要分段的长篇写 `Transport.lua`（结构照英文包：`hash`、`fullHash`、各段 `file`/`duration`/`start`/`head`）、`Audio/`、`CREDITS.txt`。
    任务对话包：客户端是英文，中文录音要走"在英文任务页上播放中文录音 + 中文字幕"那条路（`P.questVoice`、`P.questText`、`P.questTitle`），按 `Voice.lua` 的规则写。
 
