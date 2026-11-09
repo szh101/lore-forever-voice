@@ -30,7 +30,7 @@ Lore Forever 1.3.0 是 WoW: Forever 的剧情插件（CurseForge 项目 1715510�
 | `LoreForever_Voice_Female_MorePeople_frFR/` | 非英语女声包的现成例子 |
 
 先核对版本：`LoreForever/LoreForever.toc` 的 `## Version` 必须是 `1.3.0`。用户那边的片段数是（`Clips.lua` 里 `c["..."]` 的行数）：
-Female 198、Alliance 385、Horde 296、MoreItems 2435、MorePeople 2500、MorePlaces 2392、Quests 4104、Quests2 3535、Quests3 4709、MoreQuests1 3688、MoreQuests2 5261、MoreQuests3 1953，合计 35,456。对不上就是版本不同，先告诉用户。
+Female 198、Alliance 385、Horde 296、MoreItems 2435、MorePeople 2500、MorePlaces 2392、Quests 4104、Quests2 3535、Quests3 4709、MoreQuests1 3688、MoreQuests2 5261、MoreQuests3 1953，合计 31,456。对不上就是版本不同，先告诉用户。
 
 **这些材料是插件作者的作品，不要提交到本仓库**（本仓库是公开的）。
 
