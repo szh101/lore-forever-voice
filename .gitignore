@@ -1,0 +1,11 @@
+# Reference kit and build outputs never go into git (packs ship as Release assets).
+addons/
+samples/
+kit/
+work/
+build/
+dist/
+*.zip
+*.mp3
+*.wav
+*.flac
