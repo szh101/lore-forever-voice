@@ -1,0 +1,5 @@
+{"Female":["zone:stormwind","zone:elwynn","subzone:northshire-abbey"],
+"Alliance":["npc:bolvar-fordragon","npc:marshal-dughan","subzone:goldshire","subzone:cathedral-of-light","subzone:old-town","subzone:stormwind-keep","subzone:lion-s-pride-inn"],
+"MorePeople":["npc:hogger","npc:archbishop-benedictus","npc:innkeeper-farley","npc:ma-stonefield","npc:gramma-stonefield","npc:bartleby","npc:morgan-the-collector","npc:supervisor-raelen"],
+"MoreItems":["item:report-on-the-defias-brotherhood","item:defias-docket","item:bartleby-s-mug","item:gold-dust","item:huge-gnoll-claw","item:marshal-haggard-s-badge","item:bundle-of-wood"],
+"MoreQuests1":["quest:176","quest:18","quest:46","quest:11","quest:47","quest:1639","quest:121"]}

@@ -9,3 +9,11 @@ dist/
 *.mp3
 *.wav
 *.flac
+# Local working links and data (the CurseForge folders may be a symlink), and Python caches.
+addons
+__pycache__/
+*.pyc
+# The voice reference never goes into this repo.
+reference.wav
+transcript.txt
+voice.json

@@ -1,2 +1,2 @@
-Read INSTRUCTIONS.md first and follow it. Pilot before the full run; stop after the pilot release for the user to test in game.
-This repository is public: never commit the Lore Forever add-on files from CurseForge (addons/), English audio, credentials or personal details. Packs go to Releases, not git.
+On the gaming PC (Windows): follow INSTALL.md to install a release. Building (on the Mac): read REPORT.md first, then INSTRUCTIONS.md; REPORT.md records where the owner changed the plan (voice only, text stays English). Pilot before the full run; stop after the pilot release for the user to test in game.
+This repository is private, but still: never commit the Lore Forever add-on files from CurseForge (addons/), English audio, the voice reference recording (reference.wav), credentials or personal details. Packs go to Releases, not git.
