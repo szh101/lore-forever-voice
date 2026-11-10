@@ -61,8 +61,24 @@ def encode(wav, mp3):
     mp3.parent.mkdir(parents=True, exist_ok=True)
     trim = "silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05"
     af = f"{trim},areverse,{trim},areverse,loudnorm=I=-19:TP=-1.5:LRA=11,aresample=44100"
-    subprocess.run([ffmpeg(), "-hide_banner", "-loglevel", "error", "-y", "-i", str(wav), "-af", af,
-                    "-ac", "1", "-ar", "44100", "-c:a", "libmp3lame", "-b:a", "64k", str(mp3)], check=True)
+    out = ["-ac", "1", "-ar", "44100", "-c:a", "libmp3lame", "-b:a", "64k", str(mp3)]
+    r = subprocess.run([ffmpeg(), "-hide_banner", "-loglevel", "error", "-y", "-i", str(wav), "-af", af] + out)
+    if r.returncode == 0:
+        return
+    # ffmpeg 7.1 aborts on some files in this filter chain (assertion in ffmpeg_filter.c).
+    # Trim the same silence here (-50 dB, keep 0.05 s) and let ffmpeg only normalise.
+    d, sr = sf.read(wav, dtype="float32")
+    loud = np.flatnonzero(np.abs(d) > 10 ** (-50 / 20))
+    if not loud.size:
+        raise RuntimeError(f"{wav} is silent")
+    keep = int(sr * 0.05)
+    tmp = wav.with_suffix(".trim.wav")
+    sf.write(tmp, d[max(loud[0] - keep, 0):loud[-1] + keep + 1], sr)
+    try:
+        subprocess.run([ffmpeg(), "-hide_banner", "-loglevel", "error", "-y", "-i", str(tmp), "-af",
+                        "loudnorm=I=-19:TP=-1.5:LRA=11,aresample=44100"] + out, check=True)
+    finally:
+        tmp.unlink(missing_ok=True)
 
 
 # Speaking rate outside this means a cut-off or a loop (the pilot ran 5.1-6.1 chars/s).
@@ -125,8 +141,12 @@ def main():
         wav.parent.mkdir(parents=True, exist_ok=True)
         sf.write(wav, np.concatenate(pieces[:-1]), SR)
         mp3 = audio / "mp3" / r["pack"] / (r["stem"] + ".mp3")
-        encode(wav, mp3)
-        dur = duration_of(mp3)
+        try:
+            encode(wav, mp3)
+            dur = duration_of(mp3)
+        except Exception as e:   # one bad clip must not stop the run
+            print(f"  {r['id']}: encoding failed ({e})", flush=True)
+            dur = None
         cps = round(len(r["zh_text"]) / dur, 2) if dur else None
         if cps is None or not (CPS_LOW <= cps <= CPS_HIGH):
             tries[r["id"]] = tries.get(r["id"], 0) + 1
@@ -140,11 +160,11 @@ def main():
         # An id in two packs (the same story) is recorded once; every row of it gets the file.
         for row in rows:
             if row["id"] == r["id"] and row.get("zh_text") == r["zh_text"]:
-                row.update(audio=str(mp3.relative_to(audio)), duration=round(dur, 3), status=flag,
+                row.update(audio=str(mp3.relative_to(audio)), duration=round(dur, 3) if dur else None, status=flag,
                            chars_per_sec=cps, recorded_text_sha=hashlib.sha1(r["zh_text"].encode()).hexdigest()[:12])
         write_jsonl(a.manifest, rows)   # after every clip: safe to stop and resume
         el = time.time() - t0
-        print(f"[{i}/{len(todo)}] {r['id']} {dur:.1f}s audio, {len(r['zh_text'])} chars, "
+        print(f"[{i}/{len(todo)}] {r['id']} {(dur or 0):.1f}s audio, {len(r['zh_text'])} chars, "
               f"elapsed {el/60:.1f} min, eta {el/i*(len(todo)-i)/60:.1f} min", flush=True)
 
 

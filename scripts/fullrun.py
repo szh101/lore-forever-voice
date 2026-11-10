@@ -114,7 +114,7 @@ def main():
                     print(f"publish failed ({e}); recording goes on, next pack retries", flush=True)
         if left:
             subprocess.run([a.python, str(ROOT / "scripts" / "tts_zh.py"), "--voice", a.voice, "--model", a.model,
-                            "--limit", str(a.step)], check=True, cwd=ROOT)
+                            "--limit", str(a.step)], cwd=ROOT).returncode and time.sleep(30)
         elif done == total:
             print("full run recorded", flush=True)
             return
