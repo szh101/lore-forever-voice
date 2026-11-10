@@ -20,3 +20,4 @@ voice.json
 .DS_Store
 dist/
 build-full/
+*.tmp

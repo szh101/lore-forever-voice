@@ -126,4 +126,6 @@ def read_jsonl(p):
 
 def write_jsonl(p, rows):
     Path(p).parent.mkdir(parents=True, exist_ok=True)
-    Path(p).write_text("".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in rows), encoding="utf-8")
+    tmp = Path(str(p) + ".tmp")   # write then rename, so a reader never sees half a file
+    tmp.write_text("".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in rows), encoding="utf-8")
+    tmp.replace(p)
