@@ -76,9 +76,11 @@ def main():
         g.ns.Packs.recs[v] = L.table_from({"name": v, "locale": t.get("X-LoreForever-Locale")})
         current = 0
         for k, h in clips.items():
-            if k in seen:
-                problems.append(f"{v}: {k} also in {seen[k]}")
-            seen[k] = v
+            # The English Alliance and Horde packs both carry some stories (an orc in Ashenvale); ours follow them.
+            # Fine as long as both copies are the same recording.
+            if k in seen and seen[k][1] != h:
+                problems.append(f"{v}: {k} also in {seen[k][0]} with a different recording")
+            seen.setdefault(k, (v, h))
             if k not in core["entries"]:
                 problems.append(f"{v}: {k} is not an entry in the add-on data")
                 continue
