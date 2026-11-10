@@ -86,14 +86,16 @@ CREDITS = """{title}
 {line}
 
 Chinese (Mandarin) narration for the World of Warcraft add-on Lore Forever (by mikeliudev, CurseForge project
-1715510), read over its English text. Made by szh101 for personal use; not an official Lore Forever pack.
+1715510), read over its English text. Made by szh101; not an official Lore Forever pack.
 
 License
 -------
 The narration scripts are Simplified Chinese translations of Lore Forever's lore text, which it adapts from articles
 on the Warcraft Wiki (https://warcraft.wiki.gg, CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/) and
 some from Wowpedia (https://wowpedia.fandom.com, CC BY-SA 3.0). The translations are shared under the same license.
-The voice is an AI voice owned by the pack's maker, licensed for this narration only: do not reuse the recordings.
+The recordings are readings of those translations and are shared under CC BY-SA 4.0 too: credit
+"Chinese narration by szh101" and share alike. The voice is entirely AI-synthesized (Qwen3-TTS); it is not the
+voice of a real person.
 
 World of Warcraft
 -----------------

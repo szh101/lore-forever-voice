@@ -1,0 +1,30 @@
+This repository contains two kinds of material under two licenses.
+
+1. Narration scripts, glossary and recordings (translations/, glossary/, manifest/, and the audio in the Releases)
+   are derived from Lore Forever's lore text, which adapts Warcraft Wiki articles under CC BY-SA 4.0. They are
+   licensed under the Creative Commons Attribution-ShareAlike 4.0 International license:
+   https://creativecommons.org/licenses/by-sa/4.0/
+   Attribution: "Chinese narration by szh101", plus the attribution of the source text (Lore Forever by mikeliudev,
+   adapted from Warcraft Wiki, https://warcraft.wiki.gg).
+
+2. Code (scripts/, tests/) is licensed under the MIT License:
+
+MIT License
+
+Copyright (c) 2026 szh101
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+World of Warcraft and Warcraft are trademarks of Blizzard Entertainment, Inc. This is a fan project, not affiliated
+with or endorsed by Blizzard or by Lore Forever's author.
