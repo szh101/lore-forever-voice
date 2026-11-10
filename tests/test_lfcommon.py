@@ -73,8 +73,8 @@ class Manifest(unittest.TestCase):
     def test_manifest_rows_are_consistent(self):
         rows = lf.read_jsonl(ROOT / "manifest" / "clips.jsonl")
         self.assertTrue(rows)
-        ids = [r["id"] for r in rows]
-        self.assertEqual(len(ids), len(set(ids)))
+        keys = [(r["pack"], r["id"]) for r in rows]   # an id may sit in two packs, once in each
+        self.assertEqual(len(keys), len(set(keys)))
         for r in rows:
             self.assertTrue(r["pack"].startswith(lf.VOICE), r["id"])
             self.assertEqual(r["stem"], lf.clip_stem(r["id"]))

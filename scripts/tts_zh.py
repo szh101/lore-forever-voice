@@ -65,6 +65,10 @@ def encode(wav, mp3):
                     "-ac", "1", "-ar", "44100", "-c:a", "libmp3lame", "-b:a", "64k", str(mp3)], check=True)
 
 
+# Speaking rate outside this means a cut-off or a loop (the pilot ran 5.1-6.1 chars/s).
+CPS_LOW, CPS_HIGH = 3.8, 7.5
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--voice", required=True)
@@ -91,8 +95,10 @@ def main():
     s = meta["settings"]
 
     rows = read_jsonl(a.manifest)
-    todo = [r for r in rows if r.get("zh_text") and (a.redo or r.get("status") not in ("recorded",))
+    todo = [r for r in rows if r.get("zh_text") and (a.redo or r.get("status") not in ("recorded", "check"))
             and (not a.only or r["id"] in a.only)]
+    seen = set()
+    todo = [r for r in todo if not (r["id"] in seen or seen.add(r["id"]))]
     if a.limit:
         todo = todo[:a.limit]
     print(f"{len(todo)} clips to record")
@@ -101,10 +107,13 @@ def main():
 
     from mlx_audio.tts.utils import load_model
     model = load_model(a.model)
-    by_id = {r["id"]: r for r in rows}
+    tries = {}
     audio = Path(a.audio)
     t0 = time.time()
-    for i, r in enumerate(todo, 1):
+    i = 0
+    while i < len(todo):
+        r = todo[i]
+        i += 1
         pieces = []
         for part in chunks(r["zh_text"]):
             res = list(model.generate(text=part, ref_audio=str(voice / "reference.wav"), ref_text=ref_text,
@@ -118,10 +127,21 @@ def main():
         mp3 = audio / "mp3" / r["pack"] / (r["stem"] + ".mp3")
         encode(wav, mp3)
         dur = duration_of(mp3)
-        row = by_id[r["id"]]
-        row.update(audio=str(mp3.relative_to(audio)), duration=round(dur, 3), status="recorded",
-                   chars_per_sec=round(len(r["zh_text"]) / dur, 2) if dur else None,
-                   recorded_text_sha=hashlib.sha1(r["zh_text"].encode()).hexdigest()[:12])
+        cps = round(len(r["zh_text"]) / dur, 2) if dur else None
+        if cps is None or not (CPS_LOW <= cps <= CPS_HIGH):
+            tries[r["id"]] = tries.get(r["id"], 0) + 1
+            if tries[r["id"]] < 3:   # a cut-off or a loop: record it again
+                print(f"  {r['id']}: {cps} chars/s is outside {CPS_LOW}-{CPS_HIGH}, again", flush=True)
+                todo.append(r)
+                continue
+            flag = "check"
+        else:
+            flag = "recorded"
+        # An id in two packs (the same story) is recorded once; every row of it gets the file.
+        for row in rows:
+            if row["id"] == r["id"] and row.get("zh_text") == r["zh_text"]:
+                row.update(audio=str(mp3.relative_to(audio)), duration=round(dur, 3), status=flag,
+                           chars_per_sec=cps, recorded_text_sha=hashlib.sha1(r["zh_text"].encode()).hexdigest()[:12])
         write_jsonl(a.manifest, rows)   # after every clip: safe to stop and resume
         el = time.time() - t0
         print(f"[{i}/{len(todo)}] {r['id']} {dur:.1f}s audio, {len(r['zh_text'])} chars, "

@@ -1,6 +1,7 @@
-# REPORT — Chinese female narration for Lore Forever (pilot-1)
+# REPORT — Chinese female narration for Lore Forever
 
-Built on 2026-11-08 on the owner's Apple Silicon Mac. Status: **pilot only**, waiting for an in-game test.
+Built on the owner's Apple Silicon Mac. Status: **pilot-1 approved in game (2026-11-08); full run in progress**
+(FEEDBACK-pilot-1.md).
 
 ## Change from INSTRUCTIONS.md: voice only, text stays English
 
@@ -113,6 +114,28 @@ fields are right, every `c[id]` is the add-on's current English `clipHash`, and 
 `Voice.ClipCurrent` (run from its Voice.lua) accept every clip with English shown and return its Chinese words; every MP3
 and `P.len` is there (`build/selfcheck.json` in the release manifest).
 
+## Works on 1.3.0 and 1.4.0
+
+The gaming PC ran pilot-1 on core **1.3.0** and it played. For the full run, the 1.3.0 core data (CurseForge file
+9500517, data version `2026-11-07 14:40 UTC`) was loaded next to 1.4.0's: **all 5,165 overview clip ids exist in both**,
+so nothing in these packs needs 1.4.0. 13 of those entries have different English in 1.3.0; that doesn't matter here,
+since each clip carries its own Chinese words (`P.scopedClips`) and plays whenever the entry exists.
+
+## Narrator missing from Options > Narration voices (pilot-1 feedback)
+
+`/lore voice` listed the narrator and could put it first, but the Options list didn't show it. Nothing in the packs
+can cause that difference. Both lists come from the same function, `Voice.List()` (Core.lua `voiceChoices`,
+Options.lua `section.Update`), which goes through the saved `voiceOrder` with no filter. Options draws one row for each
+item it returns. `Voice.List`, `adoptNew` and `section.Update` are identical in 1.3.0 and 1.4.0. The toc fields
+(Title in English, `Locale: enUS`, Credit, Extends) only change a row's text, never whether the row is there.
+
+So it is the add-on's own behaviour, not the packs. The likeliest cause is the page's scroll height. Options sets it in
+`OnShow` (Options.lua, `c:SetHeight(top - low + 24)`) right after filling the rows, from where the last line was
+before the game laid out the new rows. A row added at the bottom of the list can then end up below what the page lets
+you scroll to. Opening Options a second time (or after `/reload`) recomputes it. Nothing in the packs was changed for this.
+If it happens again: close and reopen Options, scroll to the end of Narration voices, and turn on Lua errors
+(`/console scriptErrors 1`) in case an error stops the list being drawn.
+
 ## Not done / uncertain — check these in the game
 
 1. **Turn the narrator on.** A new voice goes to the bottom of the narrator list (Voice adoptNew). In
@@ -129,7 +152,7 @@ and `P.len` is there (`build/selfcheck.json` in the release manifest).
    `glossary/zhCN.tsv` marks the less certain ones (`status = uncertain`).
 6. The clips were checked for loudness, duration and speaking rate, not listened to one by one.
 
-## Full run (after the pilot is approved)
+## Full run (approved 2026-11-08, in progress)
 
 The 9 lore packs hold **5,165 overview clips** (Female 198, Alliance 385, Horde 296, MoreItems 741, MorePeople 583,
 MorePlaces 413, MoreQuests1 851, MoreQuests2 1,314, MoreQuests3 384); the rest of their 31,763 clip ids are section
@@ -139,11 +162,20 @@ parts need translating (name, summary, section 1). At the pilot's pace (37 s of 
 Mac, resumable across days through `manifest/clips.jsonl`. Quest giver dialogue (the 3 `_Quests` packs, 12,527 pages)
 would be a separate step after that.
 
+How it runs: `work/tr-in/full-NN.en.json` (32 batches of the spoken parts) are translated into
+`work/tr-out/full-NN.zh.json`. `scripts/fullrun.py` takes each finished batch into `translations/zhCN/full-NN.json`
+(new proper nouns go to `glossary/new-terms-full.tsv`), rebuilds the manifest, records 30 clips and repeats. It can be
+stopped and restarted at any time. An id that sits in two packs (102 of them) is recorded once and shipped in both.
+A take whose speaking rate falls outside 3.8–7.5 characters a second (a cut-off or a loop) is recorded again, up to
+3 times, and then marked `check` and left out of the packs. Releases go out as `zhCN-1.4.0-1`, one pack at a time as
+each pack is finished.
+
 ## Re-running
 
 ```
 python scripts/extract.py --addons addons --work work           # CurseForge folders -> work/*.json, hash check
-python scripts/build.py prepare --scope pilot                    # translations -> manifest/clips.jsonl
+python scripts/build.py prepare --scope all                      # translations -> manifest/clips.jsonl
+<mlx venv>/python scripts/fullrun.py --voice <documentary-voice> --model <qwen3-tts dir>    # full run driver
 <mlx venv>/python scripts/tts_zh.py --voice <documentary-voice> --model <qwen3-tts dir>   # records pending rows
 python scripts/build.py packs --out build                        # add-on folders
 python scripts/selfcheck.py --build build --addons addons --json build/selfcheck.json

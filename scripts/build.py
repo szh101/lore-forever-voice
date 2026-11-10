@@ -65,7 +65,7 @@ def prepare(a):
                 prev = old.get(k)
                 if prev and prev.get("en_fp") and prev["en_fp"] != row["en_fp"]:
                     row["status"] = "retranslate"   # the English moved on since this translation was made
-                elif prev and prev.get("status") == "recorded" and prev.get("zh_text") == row["zh_text"]:
+                elif prev and prev.get("status") in ("recorded", "check") and prev.get("zh_text") == row["zh_text"]:
                     row.update({f: prev[f] for f in KEEP if f in prev})
             else:
                 missing.append(k)
