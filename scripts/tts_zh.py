@@ -111,7 +111,8 @@ def main():
     s = meta["settings"]
 
     rows = read_jsonl(a.manifest)
-    todo = [r for r in rows if r.get("zh_text") and (a.redo or r.get("status") not in ("recorded", "check"))
+    want = ("pending", "recorded", "check") if a.redo else ("pending",)   # never "retranslate": stale Chinese
+    todo = [r for r in rows if r.get("zh_text") and r.get("status") in want
             and (not a.only or r["id"] in a.only)]
     seen = set()
     todo = [r for r in todo if not (r["id"] in seen or seen.add(r["id"]))]

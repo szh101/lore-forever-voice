@@ -2,8 +2,11 @@
 
   python scripts/fullrun.py --voice <documentary-voice> --model <qwen3-tts dir> [--python <mlx venv python>]
 
-work/tr-out/full-NN.zh.json (n, s, sec_b per id) -> translations/zhCN/full-NN.json (n, s, sec[0].b), new terms
--> glossary/new-terms-full.tsv. One process at a time touches manifest/clips.jsonl, so it can be stopped and
+  python scripts/fullrun.py ... --tag zhCN-1.5.0-1      after an add-on update (UPDATING.md)
+
+work/tr-out/<batch>.zh.json (n, s, sec_b per id) -> translations/zhCN/<batch>.json (n, s, sec[0].b, src), new
+terms -> glossary/new-terms-full.tsv. A batch is every work/tr-in/<batch>.en.json: full-NN from the first run,
+upd-YYYYMMDD-NN from scripts/update.py. One process at a time touches manifest/clips.jsonl, so it can be stopped and
 started again at any point. Stops when every batch is in and nothing is left to record.
 """
 import argparse
@@ -20,7 +23,7 @@ IN, OUT, TR = ROOT / "work" / "tr-in", ROOT / "work" / "tr-out", ROOT / "transla
 
 def take_batches():
     done = 0
-    for src in sorted(IN.glob("full-*.en.json")):
+    for src in sorted(IN.glob("*.en.json")):
         n = src.name.split(".")[0]
         zh, dest = OUT / f"{n}.zh.json", TR / f"{n}.json"
         if dest.exists():
@@ -43,13 +46,15 @@ def take_batches():
             out[k] = {"n": v["n"], "s": v["s"]}
             if "sec_b" in v:
                 out[k]["sec"] = [{"b": v["sec_b"]}]
+            if en[k].get("src"):
+                out[k]["src"] = en[k]["src"]   # the English clipHash this was translated from
         dest.write_text(json.dumps(out, ensure_ascii=False, indent=1))
         with open(ROOT / "glossary" / "new-terms-full.tsv", "a", encoding="utf-8") as f:
             for term in t.get("_new_terms", []):
                 f.write("\t".join(map(str, term)) + f"\t{n}\n")
         print(f"took {n}: {len(out)} entries", flush=True)
         done += 1
-    return done, len(list(IN.glob("full-*.en.json")))
+    return done, len(list(IN.glob("*.en.json")))
 
 
 TAG = "zhCN-1.4.0-1"
@@ -70,8 +75,19 @@ def complete_packs(rows):
     return sorted(p for p, v in by.items() if all(v))
 
 
+def notes(tag):
+    if tag == TAG:
+        return NOTES
+    return f"""Lore Forever 中文女声旁白（插件文字保持英文），{tag}。
+
+Chinese female narration for Lore Forever, read over its English text: the lore packs' overview stories.
+release-manifest.json lists what is in it (sha256, sizes, and per pack how many recordings). Install: INSTALL.md
+(replace the older LoreForever_Voice_ChineseFemale* folders). Changes since the last release: UPDATING.md."""
+
+
 def publish(a, why):
     """Build every pack from what is recorded, self-check, and replace the release's assets."""
+    TAG = a.tag
     build, dist = ROOT / "build-full", ROOT / "dist" / TAG
     for d in (build, dist):
         shutil.rmtree(d, ignore_errors=True)
@@ -82,7 +98,7 @@ def publish(a, why):
     run(a.lua_python, "scripts/release.py", "--build", str(build), "--dist", "dist", "--tag", TAG)
     files = [str(f) for f in sorted(dist.iterdir())]
     if subprocess.run(["gh", "release", "view", TAG], cwd=ROOT, capture_output=True).returncode:
-        run("gh", "release", "create", TAG, *files, "--title", "Chinese female narration (full run)", "--notes", NOTES)
+        run("gh", "release", "create", TAG, *files, "--title", f"Chinese female narration ({TAG})", "--notes", notes(TAG))
     else:
         run("gh", "release", "upload", TAG, *files, "--clobber")
     print(f"published {TAG}: {why}", flush=True)
@@ -95,14 +111,16 @@ def main():
     ap.add_argument("--python", default=sys.executable)
     ap.add_argument("--lua-python", default=sys.executable, help="a python with lupa, for the self-check")
     ap.add_argument("--step", type=int, default=30, help="clips recorded between batch checks")
+    ap.add_argument("--tag", default=TAG, help="the GitHub release to publish to")
     a = ap.parse_args()
-    state = ROOT / "work" / "published-packs.json"
+    state = ROOT / "work" / ("published-packs.json" if a.tag == TAG else f"published-{a.tag}.json")
     while True:
         done, total = take_batches()
         subprocess.run([a.python, str(ROOT / "scripts" / "build.py"), "prepare", "--scope", "all"], check=True, cwd=ROOT)
         rows = [json.loads(l) for l in (ROOT / "manifest" / "clips.jsonl").read_text().splitlines() if l.strip()]
-        left = sum(1 for r in rows if r.get("zh_text") and r.get("status") not in ("recorded", "check"))
-        print(f"batches {done}/{total}, clips to record {left}", flush=True)
+        left = sum(1 for r in rows if r.get("zh_text") and r.get("status") == "pending")
+        waiting = sum(1 for r in rows if r.get("status") in ("untranslated", "retranslate"))
+        print(f"batches {done}/{total}, clips to record {left}, waiting for a translation {waiting}", flush=True)
         if done == total:
             ready = complete_packs(rows)
             before = json.loads(state.read_text()) if state.exists() else []
@@ -116,6 +134,9 @@ def main():
             subprocess.run([a.python, str(ROOT / "scripts" / "tts_zh.py"), "--voice", a.voice, "--model", a.model,
                             "--limit", str(a.step)], cwd=ROOT).returncode and time.sleep(30)
         elif done == total:
+            if waiting:
+                print(f"{waiting} clips have no current translation: run scripts/update.py export (UPDATING.md)",
+                      flush=True)
             print("full run recorded", flush=True)
             return
         else:

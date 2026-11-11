@@ -9,7 +9,8 @@ the name, the summary and, when the English entry reads it, section 1's body (lf
 A row of manifest/clips.jsonl per clip:
   id, pack, en_pack, en_clip_hash (the English clipHash the recording stands for), en_fp, zh_name, zh_summary,
   zh_section (or null), zh_text (what is spoken), stem, audio, duration, status
-A row whose English changes (en_fp) goes to "retranslate"; one whose Chinese text changes goes back to "pending".
+A row whose English changes (en_clip_hash) goes to "retranslate" until a newer translation comes; one whose
+Chinese text changes goes back to "pending". Only "pending" rows are recorded.
 """
 import argparse
 import shutil
@@ -47,6 +48,23 @@ def scope_keys(core, packs, scope):
     return out
 
 
+def stale(t, prev, row):
+    """Whether translation t was made from older English than this row's.
+
+    Translations from scripts/update.py carry "src", the clipHash of the English they were made from. Older ones
+    don't: for those the manifest's previous row tells, and a row once marked "retranslate" stays marked until a
+    translation with a matching "src" replaces it."""
+    if t.get("src"):
+        return t["src"] != row["en_clip_hash"]
+    if not prev:
+        return False
+    if prev.get("status") == "retranslate":
+        return True
+    if prev.get("en_clip_hash") and row["en_clip_hash"]:
+        return prev["en_clip_hash"] != row["en_clip_hash"]
+    return bool(prev.get("en_fp")) and prev["en_fp"] != row["en_fp"]
+
+
 def prepare(a):
     core = load_json(ROOT / "work" / "core.json")
     packs = load_json(ROOT / "work" / "packs.json")
@@ -63,7 +81,7 @@ def prepare(a):
                 sec = t["sec"][0]["b"] if t.get("sec") and first_section_spoken(en) else None
                 row.update(zh_name=t["n"], zh_summary=t["s"], zh_section=sec, zh_text=spoken_zh(t, en), status="pending")
                 prev = old.get(k)
-                if prev and prev.get("en_fp") and prev["en_fp"] != row["en_fp"]:
+                if stale(t, prev, row):
                     row["status"] = "retranslate"   # the English moved on since this translation was made
                 elif prev and prev.get("status") in ("recorded", "check") and prev.get("zh_text") == row["zh_text"]:
                     row.update({f: prev[f] for f in KEEP if f in prev})

@@ -172,6 +172,9 @@ each pack is finished.
 
 ## Re-running
 
+After a Lore Forever update, follow UPDATING.md: `scripts/update.py export` hands out only the new and changed
+stories for translation, and `fullrun.py --tag <new tag>` records and releases them.
+
 ```
 python scripts/extract.py --addons addons --work work           # CurseForge folders -> work/*.json, hash check
 python scripts/build.py prepare --scope all                      # translations -> manifest/clips.jsonl

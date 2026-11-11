@@ -23,6 +23,8 @@ add-on's English text. Not an official Lore Forever pack.
 9 个剧情包里的 5,165 段概述旁白：地点、人物、物品和任务故事。任务对话（`_Quests*`）还没有做。
 制作方法、哈希验证、版本兼容和已知问题：[REPORT.md](REPORT.md)。
 
+插件作者更新后怎么补新内容的语音 · After a Lore Forever update: [UPDATING.md](UPDATING.md)。
+
 ## 授权 · License
 
 - 剧情文字来自 Lore Forever，改编自 [Warcraft Wiki](https://warcraft.wiki.gg)，按
