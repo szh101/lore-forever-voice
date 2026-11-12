@@ -83,7 +83,8 @@ def wanted():
                 row = QV.get(qid)
                 if row and row[0] != qid:
                     src = quests.get(str(row[0])) or src
-                text = src.get(part) or None
+                text = src.get(part)
+                text = text if text and text.strip() and text.strip() != "NULL" else None   # (SQL NULL)
                 ok = bool(text and row and quest_fps(text) & set((row[PART[part]] or "").split()))
                 out[cid] = (zh_pack(pk), "quest", QC.get(cid), text, ok, src.get("title"))
             elif cid.startswith("recap:"):
@@ -172,7 +173,7 @@ def prepare(_a=None):
             continue
         row = {"id": cid, "pack": zp, "kind": kind, "stem": clip_stem(cid), "hash": h, "verified": ok,
                "status": "no source" if not text else "untranslated"}
-        t = tr.get(cid)
+        t = tr.get(cid) if text else None   # (a page with no English is never voiced)
         if t and t.get("src") == h:
             row["zh_text"] = t["zh"]
             row["status"] = "pending"
