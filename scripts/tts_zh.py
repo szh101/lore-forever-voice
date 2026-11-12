@@ -134,7 +134,9 @@ def main():
         pieces = []
         for part in chunks(r["zh_text"]):
             res = list(model.generate(text=part, ref_audio=str(voice / "reference.wav"), ref_text=ref_text,
-                                      lang_code="Chinese", temperature=s["temperature"], max_tokens=s["max_tokens"],
+                                      lang_code="Chinese", temperature=s["temperature"],
+                                      # ~2.3 codec tokens a character: a cap keeps a short heading from running on
+                                      max_tokens=min(s["max_tokens"], max(48, 6 * len(part))),
                                       stream=False, verbose=False))
             pieces += [np.asarray(x.audio, dtype=np.float32).reshape(-1) for x in res]
             pieces.append(np.zeros(int(SR * GAP), dtype=np.float32))
@@ -149,10 +151,11 @@ def main():
             print(f"  {r['id']}: encoding failed ({e})", flush=True)
             dur = None
         cps = round(len(r["zh_text"]) / dur, 2) if dur else None
-        if cps is None or not (CPS_LOW <= cps <= CPS_HIGH):
+        low, high = (CPS_LOW, CPS_HIGH) if len(r["zh_text"]) > 12 else (1.5, 10.0)   # a heading: a few words
+        if cps is None or not (low <= cps <= high):
             tries[r["id"]] = tries.get(r["id"], 0) + 1
             if tries[r["id"]] < 3:   # a cut-off or a loop: record it again
-                print(f"  {r['id']}: {cps} chars/s is outside {CPS_LOW}-{CPS_HIGH}, again", flush=True)
+                print(f"  {r['id']}: {cps} chars/s is outside {low}-{high}, again", flush=True)
                 todo.append(r)
                 continue
             flag = "check"

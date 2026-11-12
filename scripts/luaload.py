@@ -89,4 +89,4 @@ def load_core(addons):
         run_file(L, data / f, "LoreForever", ns)
     db = ns.DB
     return {k: to_py(db[k]) for k in ["version", "entries", "clipHash", "fullclips", "clipPack", "clipNarrator",
-                                       "answerHash", "questVoice"] if db[k] is not None}
+                                       "answerHash", "questVoice", "questClip", "recaps"] if db[k] is not None}
