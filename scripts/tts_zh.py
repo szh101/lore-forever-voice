@@ -140,6 +140,13 @@ def main():
                                       stream=False, verbose=False))
             pieces += [np.asarray(x.audio, dtype=np.float32).reshape(-1) for x in res]
             pieces.append(np.zeros(int(SR * GAP), dtype=np.float32))
+        if not any(len(x) for x in pieces[:-1]):   # nothing to say (e.g. only "……"): never stop the run on it
+            print(f"  {r['id']}: no speech produced, skipped", flush=True)
+            for row in rows:
+                if row["id"] == r["id"]:
+                    row["status"] = "no source"   # (left out, like a page with no English)
+            write_jsonl(a.manifest, rows)
+            continue
         wav = audio / "wav" / r["pack"] / (r["stem"] + ".wav")
         wav.parent.mkdir(parents=True, exist_ok=True)
         sf.write(wav, np.concatenate(pieces[:-1]), SR)

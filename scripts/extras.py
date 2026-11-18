@@ -84,7 +84,7 @@ def wanted():
                 if row and row[0] != qid:
                     src = quests.get(str(row[0])) or src
                 text = src.get(part)
-                text = text if text and text.strip() and text.strip() != "NULL" else None   # (SQL NULL)
+                text = text if text and text.strip() and text.strip().upper() != "NULL" else None   # (SQL NULL, any case)
                 ok = bool(text and row and quest_fps(text) & set((row[PART[part]] or "").split()))
                 out[cid] = (zh_pack(pk), "quest", QC.get(cid), text, ok, src.get("title"))
             elif cid.startswith("recap:"):
