@@ -59,7 +59,7 @@ def ws(s):
 def wanted():
     """{clip id: (zh pack, kind, hash, english text or None, verified, context)} for every English female clip."""
     core = load_json(ROOT / "work" / "core.json")
-    extra = load_json(ROOT / "work" / "core-extra.json")
+    extra = core if "questClip" in core else load_json(ROOT / "work" / "core-extra.json")   # (older extract.py)
     packs = load_json(ROOT / "work" / "packs.json")
     quests = load_json(SRC / "quests.json") if (SRC / "quests.json").exists() else {}
     books = load_json(SRC / "books.json") if (SRC / "books.json").exists() else {}
@@ -109,11 +109,27 @@ def export(a):
     for p in IN.glob("*.en.json"):
         if not (TR / p.name.replace(".en.json", ".json")).exists():
             pending |= set(load_json(p))
+    sent = {}   # the English each page was translated from (the batches handed out)
+    for p in sorted(IN.glob("*.en.json")):
+        sent.update({k: v["en"] for k, v in load_json(p).items()})
+    restamp = {}
     todo = {}
     for cid, (zp, kind, h, text, ok, ctx) in sorted(wanted().items()):
         if not text or cid in pending or (cid in tr and tr[cid].get("src") == h):
             continue
+        if cid in tr and sent.get(cid) == text:   # the add-on's hash moved, the English didn't: same Chinese
+            restamp[cid] = h
+            continue
         todo.setdefault(kind, []).append((cid, {"en": text, "context": ctx, "src": h, "verified": ok}))
+    for f in sorted(TR.glob("*.json")):
+        t = load_json(f)
+        hit = [k for k in t if k in restamp]
+        for k in hit:
+            t[k]["src"] = restamp[k]
+        if hit:
+            f.write_text(json.dumps(t, ensure_ascii=False, indent=1), encoding="utf-8")
+    if restamp:
+        print(f"{len(restamp)} pages kept their Chinese (English unchanged, new hash)")
     IN.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(parents=True, exist_ok=True)
     for kind, items in todo.items():
@@ -167,6 +183,10 @@ def take(_a=None):
 def prepare(_a=None):
     tr = translations()
     old = {(r["pack"], r["id"]): r for r in read_jsonl(MANIFEST)}
+    by_id = {}   # a clip the English moved to another pack keeps its recording (same id, same Chinese)
+    for r in old.values():
+        if r.get("status") in ("recorded", "check"):
+            by_id.setdefault(r["id"], r)
     rows = []
     for cid, (zp, kind, h, text, ok, ctx) in sorted(wanted().items()):
         if not h:
@@ -177,7 +197,7 @@ def prepare(_a=None):
         if t and t.get("src") == h:
             row["zh_text"] = t["zh"]
             row["status"] = "pending"
-            prev = old.get((zp, cid))
+            prev = old.get((zp, cid)) or by_id.get(cid)
             if prev and prev.get("status") in ("recorded", "check") and prev.get("zh_text") == row["zh_text"]:
                 row.update({f: prev[f] for f in KEEP if f in prev})
         elif t:

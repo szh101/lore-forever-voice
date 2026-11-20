@@ -3,7 +3,7 @@
 为 WoW: Forever 插件 [Lore Forever](https://www.curseforge.com/wow/addons/lore-forever)（CurseForge 1715510，作者
 mikeliudev）录制的中文女声旁白。插件文字保持英文，剧情用中文朗读，字幕显示中文旁白稿。
 做成一位独立的旁白 "Lore Forever Chinese female narrator"（`LoreForever_Voice_ChineseFemale` 及其扩展包），
-不需要语言包，适用于 Lore Forever 1.3.0 和 1.4.0。
+不需要语言包。最新版本 `zhCN-1.15.0-1` 对应 Lore Forever 1.15.0（旧的 `zhCN-1.4.0-1` 对应 1.3.0–1.4.0）。
 
 Chinese (Mandarin) narration for the Lore Forever add-on: a separate narrator that reads the lore in Chinese over the
 add-on's English text. Not an official Lore Forever pack.
@@ -20,7 +20,18 @@ add-on's English text. Not an official Lore Forever pack.
 
 ## 内容 · What's in it
 
-9 个剧情包里的 5,165 段概述旁白：地点、人物、物品和任务故事。任务对话（`_Quests*`）还没有做。
+12 个包，约 123 小时中文旁白，和英文女声包一一对应：
+
+| 内容 | 数量 |
+|---|---|
+| 概述旁白（地点、人物、物品、任务故事） | 5,055 段 |
+| 完整故事（逐节朗读、章节标题、隐藏段落、故事标题） | 16,253 段 |
+| 任务对话（接任务、进行中、完成） | 10,709 页 |
+| 剧情回顾 | 223 段 |
+| 书本、信件、碑文 | 562 页 |
+
+没有中文的部分：WoW Forever 自制任务的对话（2,860 页）和 97 页书，因为找不到它们的英文原文；
+英文女声本身没有录音的条目，中文也没有。
 制作方法、哈希验证、版本兼容和已知问题：[REPORT.md](REPORT.md)。
 
 插件作者更新后怎么补新内容的语音 · After a Lore Forever update: [UPDATING.md](UPDATING.md)。

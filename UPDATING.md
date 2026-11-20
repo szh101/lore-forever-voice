@@ -16,19 +16,35 @@ This runs on the Mac that has the voice and the model (REPORT.md, "Re-running").
 
 ```
 python3 scripts/update.py status        # also says if a batch is still out for translation
-pkill -f scripts/fullrun.py; pkill -f scripts/tts_zh.py
+pkill -f scripts/fullrun.py; pkill -f scripts/storyrun.py; pkill -f scripts/tts_zh.py
 ```
 
 The manifest is saved after every clip, so stopping at any point loses at most the clip being recorded.
 
 ## 2. Get the new add-on
 
-Download, from CurseForge project 1715510, the new **Lore Forever** core and the **English female** packs
-(`LoreForever_Voice_Female*`; `LoreForever_Lang_frFR` and `LoreForever_Voice_Female_MorePeople_frFR` too, which
-the hash check compares against), and replace the folders in `addons/` (git-ignored: never commit them). Then:
+Download the new **Lore Forever** core (CurseForge project 1715510) and the **English female** packs, and replace
+the folders in `addons/` (git-ignored: never commit them; keep the old copy, e.g. in `work/backup-<version>/`, until
+the new release is out). Each female pack is a CurseForge project of its own (newest file of each:
+`https://www.curseforge.com/api/v1/mods/<project>/files?pageSize=1&sort=dateCreated&sortDescending=true`, then
+`.../files/<file id>/download`):
+
+| pack | project | pack | project |
+|---|---|---|---|
+| Female | 1727332 | Quests | 1727333 |
+| Female_Alliance | 1767708 | Quests2 | 1766731 |
+| Female_Horde | 1740579 | Quests3 | 1766732 |
+| Female_MoreItems | 1809088 | MoreQuests1 | 1767789 |
+| Female_MorePeople | 1743604 | MoreQuests2 | 1767791 |
+| Female_MorePlaces | 1743315 | MoreQuests3 | 1767942 |
+| Female_MorePeople_frFR (+ Lang_frFR, for the hash check) | 1767784 | | |
+
+Not every pack is re-released with each core; that's fine. If one is missing from this list, search CurseForge for
+"Lore Forever female narrator". Then:
 
 ```
-python3 scripts/extract.py --addons addons --work work
+<lua> scripts/extract.py --addons addons --work work
+python3 scripts/sources.py      # quest and book page English from the cmangos dump, for the new clip list
 ```
 
 It must pass the hash check. Then set `CORE_VERSION` in `scripts/lfcommon.py` to the new version (it goes into
@@ -54,6 +70,19 @@ This rebuilds `manifest/clips.jsonl` against the new English and writes the entr
   where the English didn't change.
 
 A story the author removed simply leaves the manifest. `python3 scripts/update.py status` shows the counts.
+
+The complete stories and the quest/recap/book pages have their own exports:
+
+```
+<mlx> scripts/stories.py export --batches 2      # work/tr-story-in/story-NN.en.json
+<mlx> scripts/extras.py export --chars 40000     # work/tr-extra-in/{quest,book,recap}-NN.en.json
+```
+
+What doesn't need new Chinese is kept: a clip the author moved to another pack keeps its recording (same id, same
+Chinese); a quest page whose hash changed but whose English is the one we translated keeps its Chinese (extras.py
+re-stamps it). A changed story's batch lists every section; give each section the old Chinese as `prev_t`/`prev_b`
+where its English is unchanged, and have the translator copy those exactly, so the recordings are reused (the
+1.15.0 update did this: 123 of 127 parts copied).
 
 ## 4. Translate
 
@@ -96,8 +125,16 @@ nohup caffeinate -is <mlx> scripts/fullrun.py --voice ~/Workspace/documentary-vo
 echo $! > work/fullrun.pid
 ```
 
-It takes each finished batch, records only the `pending` clips (about 70–80 an hour), and creates the release with
-every pack, then refreshes it each time another pack is complete. It stops when nothing is left; `work/fullrun.log`
+Then queue the complete stories and the quest/recap/book pages behind it (same tag):
+
+```
+nohup caffeinate -is <mlx> scripts/storyrun.py --voice ~/Workspace/documentary-voice \
+  --model ~/Workspace/voice-studio/.runtime/data/models/qwen3-tts-1.7b-base-bf16 \
+  --lua-python <lua> --tag zhCN-1.5.0-1 --after $(cat work/fullrun.pid) >> work/storyrun.log 2>&1 &
+```
+
+fullrun.py takes each finished batch, records only the `pending` clips (about 70–80 an hour), and creates the release with
+every pack, then refreshes it each time another pack is complete; storyrun.py does the same for its part. It stops when nothing is left; `work/fullrun.log`
 says if any clip still has no translation. Clips whose speaking rate looked wrong three times are marked `check` and
 left out (`python3 scripts/update.py status`).
 

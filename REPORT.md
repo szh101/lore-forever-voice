@@ -186,3 +186,25 @@ python scripts/release.py --build build --dist dist --tag pilot-1
 ```
 
 `lupa` (for the Lua 5.1 checks) and `imageio-ffmpeg` (MP3 encoding) are the only extra Python packages.
+
+## Update to Lore Forever 1.15.0 (2026-11-19/20, release zhCN-1.15.0-1)
+
+The full run (zhCN-1.4.0-1) finished on 2026-11-19. By then Lore Forever was at 1.15.0 (near-daily releases). The
+update followed UPDATING.md against the 1.15.0 core and the newest English female packs (MoreItems had moved to
+CurseForge project 1809088; 1,012 clips moved from MoreQuests2 to MoreQuests3 and kept their recordings). The hash
+rule still holds (99.80%, the same 10 stale rows). Changed or new: 60 overviews, 4 parts of complete stories (123
+unchanged parts copied), 27 quest pages (124 more kept their Chinese: same English, new hash), 81 book pages; 116
+recordings in all. The 761 entries new in 1.15.0 have no English female recording, so none in Chinese either.
+
+Coverage of zhCN-1.15.0-1 (unique recordings, about 123 hours): overviews 5,055; complete-story pieces 3,087,
+headings 8,092, hidden passages 1,645, titles 3,429; quest pages 10,709 (one flagged `check`, kept); recaps 223;
+book pages 562. Not voiced: 2,860 quest pages (WoW Forever's own quests, ids above 30000, and a few with no text in
+the cmangos dump) and 97 book pages, for want of their English.
+
+Bugs found and fixed during the runs: a quest page stored as lowercase `null` made tts_zh.py crash in a loop (now:
+any-case NULL is "no source", and a clip with no speech is left out); scripts/sources.py now rebuilds the quest and
+book source text (it was only in the session before).
+
+Note: since about 2026-11-10 the add-on's author also ships official Simplified Chinese narration packs, which play
+when the add-on's language is set to 简体中文 (Chinese text). This project stays the one for Chinese voice over
+English text, in the owner's chosen voice, with quest dialogue.

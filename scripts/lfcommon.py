@@ -17,7 +17,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CORE_VERSION = "1.4.0"
+CORE_VERSION = "1.15.0"
 LOCALE = "zhCN"          # the language spoken (the packs themselves are enUS: they play over English text)
 VOICE = "LoreForever_Voice_ChineseFemale"
 

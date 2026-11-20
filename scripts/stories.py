@@ -190,6 +190,10 @@ def prepare(_a=None):
     core, packs, ov = load()
     E, CH, tr = core["entries"], core["clipHash"], translations()
     old = {(r["pack"], r["id"]): r for r in read_jsonl(MANIFEST)}
+    by_id = {}   # a clip the English moved to another pack keeps its recording (same id, same Chinese)
+    for r in old.values():
+        if r.get("status") in ("recorded", "check"):
+            by_id.setdefault(r["id"], r)
     rows = []
     for zp, kind, k, n in sorted(wanted(core, packs, set(ov))):
         o, t = ov.get(k, {}), tr.get(k, {})
@@ -212,7 +216,7 @@ def prepare(_a=None):
         if row["text"] and (kind == "title" or t.get("src") == core["fullclips"].get(k)):
             row["zh_text"] = zh_text(row["text"]) if kind != "title" else row["text"].strip()
             row["status"] = "pending"
-            prev = old.get((zp, row["id"]))
+            prev = old.get((zp, row["id"])) or by_id.get(row["id"])
             if prev and prev.get("status") in ("recorded", "check") and prev.get("zh_text") == row["zh_text"]:
                 row.update({f: prev[f] for f in KEEP if f in prev})
         elif row["text"]:
